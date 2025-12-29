@@ -48,7 +48,7 @@ resource "google_compute_global_address" "external_ip" {
 }
 
 resource "google_compute_managed_ssl_certificate" "ssl_cert" {
-  count   = var.create_external_lb && var.ssl_domains != null ? 1 : 0
+  count   = var.create_external_lb && var.ssl_domains != null ? 0 : 1
   name    = "${var.network_name}-ssl-cert"
   project = var.project_id
 
