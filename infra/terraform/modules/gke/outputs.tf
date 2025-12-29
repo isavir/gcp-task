@@ -80,11 +80,6 @@ output "horizontal_pod_autoscaling_enabled" {
   value       = module.gke.horizontal_pod_autoscaling_enabled
 }
 
-output "vertical_pod_autoscaling_enabled" {
-  description = "Whether vertical pod autoscaling enabled"
-  value       = module.gke.vertical_pod_autoscaling_enabled
-}
-
 # Node pools
 output "node_pools_names" {
   description = "List of node pools names"

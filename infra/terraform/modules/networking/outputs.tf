@@ -59,9 +59,9 @@ output "route_names" {
 }
 
 # Cloud NAT outputs
-output "nat_ips" {
-  description = "List of NAT IPs created"
-  value       = var.enable_nat ? module.cloud_nat[0].nat_ips : []
+output "nat_name" {
+  description = "Name of the Cloud NAT gateway"
+  value       = var.enable_nat ? module.cloud_nat[0].name : null
 }
 
 output "router_name" {

@@ -91,9 +91,9 @@ output "gke_service_account" {
 }
 
 # NAT Gateway Outputs
-output "nat_ips" {
-  description = "NAT gateway IP addresses"
-  value       = module.private_vpc.nat_ips
+output "nat_name" {
+  description = "NAT gateway name"
+  value       = module.private_vpc.nat_name
 }
 
 output "nat_router_name" {
