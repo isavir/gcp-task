@@ -80,12 +80,6 @@ variable "enable_binary_authorization" {
   default     = false
 }
 
-variable "enable_pod_security_policy" {
-  description = "Enable PodSecurityPolicy controller"
-  type        = bool
-  default     = false
-}
-
 # Cluster features
 variable "enable_hpa" {
   description = "Enable horizontal pod autoscaling addon"

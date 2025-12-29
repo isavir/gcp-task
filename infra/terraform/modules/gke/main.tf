@@ -24,17 +24,18 @@ module "gke" {
   master_authorized_networks = var.master_authorized_networks
 
   # Networking
-  enable_ip_alias                = true
+  ip_allocation_policy = {
+    cluster_secondary_range_name  = var.ip_range_pods
+    services_secondary_range_name = var.ip_range_services
+  }
   enable_shielded_nodes         = var.enable_shielded_nodes
-  enable_network_policy         = var.enable_network_policy
-  network_policy                = var.enable_network_policy
-  horizontal_pod_autoscaling    = var.enable_hpa
-  http_load_balancing          = var.enable_http_load_balancing
-  enable_vertical_pod_autoscaling = var.enable_vpa
+  network_policy               = var.enable_network_policy
+  horizontal_pod_autoscaling   = var.enable_hpa
+  http_load_balancing         = var.enable_http_load_balancing
+  vertical_pod_autoscaling    = var.enable_vpa
 
   # Security
   enable_binary_authorization = var.enable_binary_authorization
-  enable_pod_security_policy = var.enable_pod_security_policy
 
   # Logging and monitoring
   logging_service    = var.logging_service
