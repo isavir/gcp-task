@@ -11,10 +11,11 @@ module "gke" {
   source  = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
   version = "~> 31.0"
 
-  project_id = data.google_project.current.project_id
-  name       = var.cluster_name
-  region     = var.region
-  zones      = var.zones
+  project_id         = data.google_project.current.project_id
+  network_project_id = data.google_project.current.project_id
+  name               = var.cluster_name
+  region             = var.region
+  zones              = var.zones
 
   network           = var.network
   subnetwork        = var.subnetwork
