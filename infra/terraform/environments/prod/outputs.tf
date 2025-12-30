@@ -115,18 +115,18 @@ output "psc_endpoint_ip" {
 # Connection Information
 output "kubectl_connection_command" {
   description = "Command to connect to the GKE cluster"
-  value       = "gcloud container clusters get-credentials ${module.gke.name} --region ${var.region} --project ${var.project_id}"
+  value       = "gcloud container clusters get-credentials ${module.gke.name} --region ${var.region} --project ${data.google_client_config.default.project}"
 }
 
 output "cluster_info" {
   description = "Summary of cluster information"
   value = {
-    project_id     = var.project_id
-    region         = var.region
-    cluster_name   = module.gke.name
-    cluster_type   = module.gke.type
-    node_count     = "1-2 (e2-micro, preemptible)"
-    external_ip    = module.public_vpc.external_ip
-    vpc_setup      = "Public VPC with Cloud Armor + Private VPC with GKE"
+    project_id   = data.google_client_config.default.project
+    region       = var.region
+    cluster_name = module.gke.name
+    cluster_type = module.gke.type
+    node_count   = "1-2 (e2-micro, preemptible)"
+    external_ip  = module.public_vpc.external_ip
+    vpc_setup    = "Public VPC with Cloud Armor + Private VPC with GKE"
   }
 }

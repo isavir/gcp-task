@@ -1,11 +1,17 @@
 # GKE Module for Private VPC Deployment
 # Built on top of terraform-google-modules/kubernetes-engine/google
 
+# Get current project ID from provider
+data "google_client_config" "default" {}
+
+# Get current project information
+data "google_project" "current" {}
+
 module "gke" {
   source  = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
   version = "~> 31.0"
 
-  project_id = var.project_id
+  project_id = data.google_project.current.project_id
   name       = var.cluster_name
   region     = var.region
   zones      = var.zones
@@ -24,10 +30,10 @@ module "gke" {
   master_authorized_networks = var.master_authorized_networks
 
   # Networking
-  enable_shielded_nodes         = var.enable_shielded_nodes
-  network_policy               = var.enable_network_policy
-  horizontal_pod_autoscaling   = var.enable_hpa
-  http_load_balancing         = var.enable_http_load_balancing
+  enable_shielded_nodes      = var.enable_shielded_nodes
+  network_policy             = var.enable_network_policy
+  horizontal_pod_autoscaling = var.enable_hpa
+  http_load_balancing        = var.enable_http_load_balancing
 
   # Security
   enable_binary_authorization = var.enable_binary_authorization
@@ -35,10 +41,10 @@ module "gke" {
   # Logging and monitoring
   logging_service    = var.logging_service
   monitoring_service = var.monitoring_service
-  
+
   # Cluster features
   remove_default_node_pool = true
-  initial_node_count      = 1
+  initial_node_count       = 1
 
   # Release channel
   release_channel = var.release_channel
@@ -47,7 +53,7 @@ module "gke" {
   maintenance_start_time = var.maintenance_start_time
 
   # Workload Identity
-  identity_namespace = var.enable_workload_identity ? "${var.project_id}.svc.id.goog" : null
+  identity_namespace = var.enable_workload_identity ? "${data.google_project.current.project_id}.svc.id.goog" : null
 
   # Node pools
   node_pools = var.node_pools
@@ -70,7 +76,6 @@ resource "google_compute_firewall" "gke_webhook_firewall" {
   count   = var.create_webhook_firewall ? 1 : 0
   name    = "${var.cluster_name}-webhook-firewall"
   network = var.network
-  project = var.project_id
 
   allow {
     protocol = "tcp"
@@ -88,7 +93,6 @@ resource "google_service_account" "gke_workload_identity" {
   count        = var.create_workload_identity_sa ? 1 : 0
   account_id   = "${var.cluster_name}-wi-sa"
   display_name = "Workload Identity SA for ${var.cluster_name}"
-  project      = var.project_id
 }
 
 resource "google_service_account_iam_binding" "workload_identity_binding" {
@@ -97,15 +101,15 @@ resource "google_service_account_iam_binding" "workload_identity_binding" {
   role               = "roles/iam.workloadIdentityUser"
 
   members = [
-    "serviceAccount:${var.project_id}.svc.id.goog[${var.workload_identity_namespace}/${var.workload_identity_ksa_name}]"
+    "serviceAccount:${data.google_project.current.project_id}.svc.id.goog[${var.workload_identity_namespace}/${var.workload_identity_ksa_name}]"
   ]
 }
 
 # IAM roles for the Workload Identity service account
 resource "google_project_iam_member" "workload_identity_roles" {
   for_each = var.create_workload_identity_sa ? toset(var.workload_identity_roles) : []
-  
-  project = var.project_id
+
+  project = data.google_project.current.project_id
   role    = each.value
   member  = "serviceAccount:${google_service_account.gke_workload_identity[0].email}"
 }

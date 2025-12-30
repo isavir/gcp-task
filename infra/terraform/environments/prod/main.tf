@@ -10,21 +10,27 @@ terraform {
     }
   }
   backend "gcs" {
-    bucket          = "tfstate-bucket-3a12db2b"
-    prefix          = "/prod/terraform.tfstate"
+    bucket = "tfstate-bucket-3a12db2b"
+    prefix = "/prod/terraform.tfstate"
   }
 }
 
 provider "google" {
-  project = var.project_id
-  region  = var.region
+  region = var.region
+  # Project will be read from GOOGLE_PROJECT environment variable
+  # or from gcloud default project configuration
 }
+
+# Get current project ID from provider
+data "google_client_config" "default" {}
+
+# Get current project information
+data "google_project" "current" {}
 
 # Public VPC with Cloud Armor and External Load Balancer
 module "public_vpc" {
   source = "../../modules/networking"
 
-  project_id   = var.project_id
   network_name = "prod-public-vpc"
 
   subnets = [
@@ -68,21 +74,20 @@ module "public_vpc" {
 
   # Cloud Armor (basic rate limiting for free tier)
   create_cloud_armor   = true
-  rate_limit_threshold = 100  # Reduced threshold
+  rate_limit_threshold = 100 # Reduced threshold
 
   # PSC endpoint to connect to private VPC
   create_psc_endpoint    = true
-  psc_region            = var.region
+  psc_region             = var.region
   psc_service_attachment = module.private_vpc.psc_attachment_id
-  psc_subnet            = "public-subnet-${var.region}"
-  psc_endpoint_ip       = "10.0.1.100"
+  psc_subnet             = "public-subnet-${var.region}"
+  psc_endpoint_ip        = "10.0.1.100"
 }
 
 # Private VPC with GKE and Private Service Connect
 module "private_vpc" {
   source = "../../modules/networking"
 
-  project_id   = var.project_id
   network_name = "prod-private-vpc"
 
   subnets = [
@@ -97,7 +102,7 @@ module "private_vpc" {
       subnet_ip             = "10.1.1.0/24"
       subnet_region         = var.region
       subnet_private_access = "true"
-      purpose              = "PRIVATE_SERVICE_CONNECT"
+      purpose               = "PRIVATE_SERVICE_CONNECT"
     }
   ]
 
@@ -141,9 +146,9 @@ module "private_vpc" {
 
   # PSC service attachment for private access
   create_psc_attachment = true
-  psc_region           = var.region
-  psc_target_service   = "projects/${var.project_id}/regions/${var.region}/serviceAttachments/gke-service"
-  psc_nat_subnets      = ["projects/${var.project_id}/regions/${var.region}/subnetworks/psc-nat-subnet-${var.region}"]
+  psc_region            = var.region
+  psc_target_service    = "projects/${data.google_project.current.project_id}/regions/${var.region}/serviceAttachments/gke-service"
+  psc_nat_subnets       = ["projects/${data.google_project.current.project_id}/regions/${var.region}/subnetworks/psc-nat-subnet-${var.region}"]
 
   # Remove default internet gateway for security
   delete_default_routes = true
@@ -153,7 +158,6 @@ module "private_vpc" {
 module "gke" {
   source = "../../modules/gke"
 
-  project_id   = var.project_id
   cluster_name = "prod-private-gke"
   region       = var.region
 
@@ -179,18 +183,18 @@ module "gke" {
   ]
 
   # Security features (adjusted for free tier)
-  enable_shielded_nodes       = false  # Disabled for free tier
-  enable_network_policy       = false  # Disabled to reduce resource usage
-  enable_binary_authorization = false  # Disabled for free tier
+  enable_shielded_nodes       = false # Disabled for free tier
+  enable_network_policy       = false # Disabled to reduce resource usage
+  enable_binary_authorization = false # Disabled for free tier
 
   # Cluster features (free tier optimized)
-  enable_hpa                = false  # Disabled to reduce complexity
-  enable_vpa                = false  # Disabled for free tier
-  enable_http_load_balancing = true   # Keep enabled for basic functionality
+  enable_hpa                 = false # Disabled to reduce complexity
+  enable_vpa                 = false # Disabled for free tier
+  enable_http_load_balancing = true  # Keep enabled for basic functionality
 
   # Workload Identity (simplified for free tier)
-  enable_workload_identity    = false  # Disabled to reduce complexity
-  create_workload_identity_sa = false  # Disabled for free tier
+  enable_workload_identity    = false # Disabled to reduce complexity
+  create_workload_identity_sa = false # Disabled for free tier
   # workload_identity_namespace = "default"
   # workload_identity_ksa_name  = "workload-identity-sa"
   # workload_identity_roles = [
@@ -203,17 +207,17 @@ module "gke" {
   node_pools = [
     {
       name               = "system-pool"
-      machine_type       = "e2-micro"        # Free tier eligible
-      min_count          = 1                 
-      max_count          = 2                 
-      disk_size_gb       = 30                
-      disk_type          = "pd-standard"     
+      machine_type       = "e2-micro" # Free tier eligible
+      min_count          = 1
+      max_count          = 2
+      disk_size_gb       = 30
+      disk_type          = "pd-standard"
       image_type         = "COS_CONTAINERD"
       auto_repair        = true
       auto_upgrade       = true
-      preemptible        = true              # Use preemptible for cost savings
-      max_pods_per_node  = 32                # Reduced for smaller nodes
-      enable_secure_boot = false             # Disabled for free tier
+      preemptible        = true  # Use preemptible for cost savings
+      max_pods_per_node  = 32    # Reduced for smaller nodes
+      enable_secure_boot = false # Disabled for free tier
     }
   ]
 

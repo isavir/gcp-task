@@ -1,8 +1,3 @@
-variable "project_id" {
-  description = "The project ID to host the network in"
-  type        = string
-}
-
 variable "network_name" {
   description = "The name of the VPC network"
   type        = string
@@ -17,17 +12,17 @@ variable "routing_mode" {
 variable "subnets" {
   description = "The list of subnets being created"
   type = list(object({
-    subnet_name               = string
-    subnet_ip                 = string
-    subnet_region             = string
-    subnet_private_access     = optional(string, "false")
+    subnet_name                = string
+    subnet_ip                  = string
+    subnet_region              = string
+    subnet_private_access      = optional(string, "false")
     subnet_private_ipv6_access = optional(string)
-    subnet_flow_logs          = optional(string, "false")
-    description               = optional(string)
-    purpose                   = optional(string)
-    role                      = optional(string)
-    stack_type                = optional(string)
-    ipv6_access_type          = optional(string)
+    subnet_flow_logs           = optional(string, "false")
+    description                = optional(string)
+    purpose                    = optional(string)
+    role                       = optional(string)
+    stack_type                 = optional(string)
+    ipv6_access_type           = optional(string)
   }))
   default = []
 }
