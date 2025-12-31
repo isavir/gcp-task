@@ -128,7 +128,6 @@ resource "google_compute_address" "psc_endpoint_ip" {
   region       = var.psc_region
   subnetwork   = "projects/${data.google_project.current.project_id}/regions/${var.psc_region}/subnetworks/${var.psc_subnet}"
   address_type = "INTERNAL"
-  purpose      = "PRIVATE_SERVICE_CONNECT"
   address      = var.psc_endpoint_ip
 }
 

@@ -213,6 +213,12 @@ variable "cluster_resource_labels" {
   default     = {}
 }
 
+variable "node_service_account_email" {
+  description = "Email of an existing service account to use for GKE nodes. If not provided, a new one will be created."
+  type        = string
+  default     = ""
+}
+
 variable "create_webhook_firewall" {
   description = "Whether to create firewall rules for webhooks"
   type        = bool

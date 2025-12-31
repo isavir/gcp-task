@@ -97,6 +97,16 @@ output "service_account" {
   value       = module.gke.service_account
 }
 
+output "node_service_account_email" {
+  description = "Email of the custom node service account"
+  value       = var.node_service_account_email != "" ? var.node_service_account_email : google_service_account.gke_node_sa[0].email
+}
+
+output "node_service_account_name" {
+  description = "Name of the custom node service account"
+  value       = var.node_service_account_email != "" ? var.node_service_account_email : google_service_account.gke_node_sa[0].name
+}
+
 # Workload Identity
 output "identity_namespace" {
   description = "Workload Identity namespace"
