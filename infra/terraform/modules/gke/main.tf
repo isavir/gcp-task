@@ -18,6 +18,8 @@ module "gke" {
   region             = var.region
   zones              = var.zones
 
+  deletion_protection = false
+  
   network           = var.network
   subnetwork        = var.subnetwork
   ip_range_pods     = var.ip_range_pods
