@@ -224,3 +224,9 @@ variable "create_webhook_firewall" {
   type        = bool
   default     = false
 }
+
+variable "deletion_protection" {
+  description = "Whether or not to allow Terraform to destroy the cluster"
+  type        = bool
+  default     = true
+}
