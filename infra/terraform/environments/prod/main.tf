@@ -148,6 +148,16 @@ module "private_vpc" {
   delete_default_routes = true
 }
 
+# Create a regional internal IP address for the PSC target
+resource "google_compute_address" "psc_target_ip" {
+  count        = 1
+  name         = "psc-target-internal-ip"
+  region       = var.region
+  subnetwork   = "projects/${data.google_project.current.project_id}/regions/${var.region}/subnetworks/gke-subnet-${var.region}"
+  address_type = "INTERNAL"
+  address      = "10.1.0.200"
+}
+
 # Create a simple internal load balancer for PSC target
 resource "google_compute_forwarding_rule" "psc_target" {
   count                 = 1
@@ -156,7 +166,7 @@ resource "google_compute_forwarding_rule" "psc_target" {
   load_balancing_scheme = "INTERNAL"
   network               = module.private_vpc.network_name
   subnetwork            = "projects/${data.google_project.current.project_id}/regions/${var.region}/subnetworks/gke-subnet-${var.region}"
-  ip_address            = "10.1.0.200"
+  ip_address            = google_compute_address.psc_target_ip[0].address
   ip_protocol           = "TCP"
   ports                 = ["80", "443"]
   backend_service       = google_compute_region_backend_service.psc_backend[0].self_link
