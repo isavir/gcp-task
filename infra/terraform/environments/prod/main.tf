@@ -202,6 +202,8 @@ module "gke" {
   cluster_name = "prod-private-gke"
   region       = var.region
 
+  deletion_protection = false
+  
   network    = module.private_vpc.network_name
   subnetwork = "gke-subnet-${var.region}"
 
