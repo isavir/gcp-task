@@ -11,8 +11,9 @@ module "gke" {
   source  = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
   version = "~> 31.0"
 
-  project_id         = data.google_project.current.project_id
-  network_project_id = data.google_project.current.project_id
+  # Use the project from the provider configuration
+  project_id         = data.google_client_config.default.project
+  network_project_id = data.google_client_config.default.project
   name               = var.cluster_name
   region             = var.region
   zones              = var.zones
@@ -54,7 +55,7 @@ module "gke" {
   maintenance_start_time = var.maintenance_start_time
 
   # Workload Identity
-  identity_namespace = var.enable_workload_identity ? "${data.google_project.current.project_id}.svc.id.goog" : null
+  identity_namespace = var.enable_workload_identity ? "${data.google_client_config.default.project}.svc.id.goog" : null
 
   # Node pools
   node_pools = var.node_pools
@@ -102,7 +103,7 @@ resource "google_service_account_iam_binding" "workload_identity_binding" {
   role               = "roles/iam.workloadIdentityUser"
 
   members = [
-    "serviceAccount:${data.google_project.current.project_id}.svc.id.goog[${var.workload_identity_namespace}/${var.workload_identity_ksa_name}]"
+    "serviceAccount:${data.google_client_config.default.project}.svc.id.goog[${var.workload_identity_namespace}/${var.workload_identity_ksa_name}]"
   ]
 }
 
@@ -110,7 +111,7 @@ resource "google_service_account_iam_binding" "workload_identity_binding" {
 resource "google_project_iam_member" "workload_identity_roles" {
   for_each = var.create_workload_identity_sa ? toset(var.workload_identity_roles) : []
 
-  project = data.google_project.current.project_id
+  project = data.google_client_config.default.project
   role    = each.value
   member  = "serviceAccount:${google_service_account.gke_workload_identity[0].email}"
 }
