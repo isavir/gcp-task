@@ -145,7 +145,7 @@ module "private_vpc" {
   nat_region = var.region
 
   # Remove default internet gateway for security
-  delete_default_routes = true
+  delete_default_routes = false
 }
 
 # Create a simple internal load balancer for PSC target
@@ -248,7 +248,7 @@ module "gke" {
   node_pools = [
     {
       name               = "system-pool"
-      machine_type       = "e2-micro" # Free tier eligible
+      machine_type       = "e2-small" # Free tier eligible
       min_count          = 1
       max_count          = 2
       disk_size_gb       = 30
