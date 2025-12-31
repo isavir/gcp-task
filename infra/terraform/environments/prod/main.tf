@@ -208,6 +208,9 @@ module "gke" {
   ip_range_pods     = "gke-pods"
   ip_range_services = "gke-services"
 
+  # Deletion protection
+  deletion_protection = false
+
   # Private cluster configuration
   enable_private_endpoint = false # Allow access from authorized networks
   master_ipv4_cidr_block  = "172.16.0.0/28"
