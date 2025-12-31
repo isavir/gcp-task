@@ -114,12 +114,6 @@ resource "google_project_iam_member" "gke_node_sa_roles" {
   role    = each.value
   member  = "serviceAccount:${google_service_account.gke_node_sa[0].email}"
 }
-  ])
-
-  project = data.google_client_config.default.project
-  role    = each.value
-  member  = "serviceAccount:${google_service_account.gke_node_sa.email}"
-}
 
 # Service Account for Workload Identity (optional)
 resource "google_service_account" "gke_workload_identity" {
