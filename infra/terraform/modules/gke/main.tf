@@ -107,7 +107,8 @@ resource "google_project_iam_member" "gke_node_sa_roles" {
     "roles/logging.logWriter",
     "roles/monitoring.metricWriter",
     "roles/monitoring.viewer",
-    "roles/stackdriver.resourceMetadata.writer"
+    "roles/stackdriver.resourceMetadata.writer",
+    "roles/iam.serviceAccountUser"
   ]) : toset([])
 
   project = data.google_client_config.default.project
