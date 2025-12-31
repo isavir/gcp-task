@@ -65,8 +65,8 @@ resource "google_compute_managed_ssl_certificate" "ssl_cert" {
 
 # Cloud Armor Security Policy (for public VPC)
 resource "google_compute_security_policy" "cloud_armor" {
-  count = var.create_cloud_armor ? 1 : 0
-  name  = "${var.network_name}-security-policy"
+  count   = var.create_cloud_armor ? 1 : 0
+  name    = "${var.network_name}-security-policy"
   project = data.google_project.current.project_id
 
   # Default rule
@@ -95,9 +95,9 @@ resource "google_compute_security_policy" "cloud_armor" {
         }
       }
       rate_limit_options {
-        conform_action = "allow"
-        exceed_action  = "deny(429)"
-        enforce_on_key = "IP"
+        conform_action   = "allow"
+        exceed_action    = "deny(429)"
+        enforce_on_key   = "IP"
         ban_duration_sec = var.rate_limit_ban_duration_sec
         rate_limit_threshold {
           count        = var.rate_limit_threshold
@@ -127,8 +127,9 @@ resource "google_compute_forwarding_rule" "psc_endpoint" {
   name   = "${var.network_name}-psc-endpoint"
   region = var.psc_region
 
-  target     = var.psc_service_attachment
-  network    = module.vpc.network_name
-  subnetwork = "projects/${data.google_project.current.project_id}/regions/${var.psc_region}/subnetworks/${var.psc_subnet}"
+  target                = var.psc_service_attachment
+  network               = module.vpc.network_name
+  load_balancing_scheme = ""
+  subnetwork            = "projects/${data.google_project.current.project_id}/regions/${var.psc_region}/subnetworks/${var.psc_subnet}"
   # Note: PSC endpoints typically don't specify ip_address - GCP auto-assigns
 }

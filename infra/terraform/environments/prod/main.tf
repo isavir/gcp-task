@@ -168,17 +168,17 @@ resource "google_compute_region_backend_service" "psc_backend" {
   region                = var.region
   load_balancing_scheme = "INTERNAL"
   protocol              = "TCP"
-  
+
   # We'll add backends later when GKE nodes are available
   health_checks = [google_compute_region_health_check.psc_health[0].self_link]
 }
 
 # Create a health check for the backend service
 resource "google_compute_region_health_check" "psc_health" {
-  count = 1
-  name  = "psc-health-check"
+  count  = 1
+  name   = "psc-health-check"
   region = var.region
-  
+
   tcp_health_check {
     port = 80
   }
@@ -233,7 +233,7 @@ module "gke" {
   enable_http_load_balancing = true  # Keep enabled for basic functionality
 
   # Workload Identity (simplified for free tier)
-  enable_workload_identity    = true 
+  enable_workload_identity    = true
   create_workload_identity_sa = false # Disabled for free tier
   # workload_identity_namespace = "default"
   # workload_identity_ksa_name  = "workload-identity-sa"
