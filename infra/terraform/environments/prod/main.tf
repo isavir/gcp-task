@@ -81,7 +81,7 @@ module "public_vpc" {
   psc_region             = var.region
   psc_service_attachment = google_compute_service_attachment.psc_attachment.self_link
   psc_subnet             = "public-subnet-${var.region}"
-  psc_endpoint_ip        = "10.0.1.100"
+  psc_endpoint_ip        = "10.0.1.200"
 }
 
 # Private VPC with GKE and Private Service Connect
