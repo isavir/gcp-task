@@ -141,5 +141,5 @@ resource "google_compute_forwarding_rule" "psc_endpoint" {
   network    = module.vpc.network_name
   load_balancing_scheme = ""
   subnetwork = "projects/${data.google_project.current.project_id}/regions/${var.psc_region}/subnetworks/${var.psc_subnet}"
-  ip_address = google_compute_address.psc_endpoint_ip[0].address
+  ip_address = google_compute_address.psc_endpoint_ip[0].id
 }
