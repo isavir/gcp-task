@@ -79,7 +79,7 @@ module "public_vpc" {
   # PSC endpoint to connect to private VPC
   create_psc_endpoint    = true
   psc_region             = var.region
-  psc_service_attachment = module.private_vpc.psc_attachment_id
+  psc_service_attachment = google_compute_service_attachment.psc_attachment.self_link
   psc_subnet             = "public-subnet-${var.region}"
   psc_endpoint_ip        = "10.0.1.100"
 }
@@ -144,14 +144,55 @@ module "private_vpc" {
   enable_nat = true
   nat_region = var.region
 
-  # PSC service attachment for private access
-  create_psc_attachment = true
-  psc_region            = var.region
-  psc_target_service    = "projects/${data.google_project.current.project_id}/regions/${var.region}/serviceAttachments/gke-service"
-  psc_nat_subnets       = ["projects/${data.google_project.current.project_id}/regions/${var.region}/subnetworks/psc-nat-subnet-${var.region}"]
-
   # Remove default internet gateway for security
   delete_default_routes = true
+}
+
+# Create a simple internal load balancer for PSC target
+resource "google_compute_forwarding_rule" "psc_target" {
+  count                 = 1
+  name                  = "psc-target-forwarding-rule"
+  region                = var.region
+  load_balancing_scheme = "INTERNAL"
+  network               = module.private_vpc.network_name
+  subnetwork            = "projects/${data.google_project.current.project_id}/regions/${var.region}/subnetworks/gke-subnet-${var.region}"
+  ip_address            = "10.1.0.200"
+  ip_protocol           = "TCP"
+  ports                 = ["80", "443"]
+  backend_service       = google_compute_region_backend_service.psc_backend[0].self_link
+}
+
+# Create a backend service for the internal load balancer
+resource "google_compute_region_backend_service" "psc_backend" {
+  count                 = 1
+  name                  = "psc-backend-service"
+  region                = var.region
+  load_balancing_scheme = "INTERNAL"
+  protocol              = "TCP"
+  
+  # We'll add backends later when GKE nodes are available
+  health_checks = [google_compute_region_health_check.psc_health[0].self_link]
+}
+
+# Create a health check for the backend service
+resource "google_compute_region_health_check" "psc_health" {
+  count = 1
+  name  = "psc-health-check"
+  region = var.region
+  
+  tcp_health_check {
+    port = 80
+  }
+}
+
+# Now create the PSC service attachment
+resource "google_compute_service_attachment" "psc_attachment" {
+  name                  = "prod-private-vpc-psc-attachment"
+  region                = var.region
+  target_service        = google_compute_forwarding_rule.psc_target[0].self_link
+  connection_preference = "ACCEPT_AUTOMATIC"
+  nat_subnets           = ["projects/${data.google_project.current.project_id}/regions/${var.region}/subnetworks/psc-nat-subnet-${var.region}"]
+  enable_proxy_protocol = false
 }
 
 # Private GKE Cluster

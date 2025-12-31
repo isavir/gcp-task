@@ -104,7 +104,7 @@ output "nat_router_name" {
 # Private Service Connect Outputs
 output "psc_attachment_id" {
   description = "Private Service Connect attachment ID"
-  value       = module.private_vpc.psc_attachment_id
+  value       = google_compute_service_attachment.psc_attachment.id
 }
 
 output "psc_endpoint_ip" {
