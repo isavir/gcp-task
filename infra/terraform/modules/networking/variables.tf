@@ -141,6 +141,12 @@ variable "rate_limit_threshold" {
   default     = null
 }
 
+variable "rate_limit_ban_duration_sec" {
+  description = "Ban duration in seconds for rate limiting (required for rate_based_ban)"
+  type        = number
+  default     = 600
+}
+
 # Private Service Connect variables
 variable "create_psc_attachment" {
   description = "Whether to create PSC service attachment (for internal VPC)"

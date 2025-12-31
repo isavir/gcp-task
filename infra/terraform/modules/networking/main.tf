@@ -40,6 +40,7 @@ module "cloud_nat" {
   name       = "${var.network_name}-nat"
 
   create_router = var.create_nat_router
+  network       = var.create_nat_router ? module.vpc.network_name : ""
 
   source_subnetwork_ip_ranges_to_nat = var.nat_ip_ranges_to_nat
 
@@ -97,6 +98,7 @@ resource "google_compute_security_policy" "cloud_armor" {
         conform_action = "allow"
         exceed_action  = "deny(429)"
         enforce_on_key = "IP"
+        ban_duration_sec = var.rate_limit_ban_duration_sec
         rate_limit_threshold {
           count        = var.rate_limit_threshold
           interval_sec = 60
@@ -125,9 +127,8 @@ resource "google_compute_forwarding_rule" "psc_endpoint" {
   name   = "${var.network_name}-psc-endpoint"
   region = var.psc_region
 
-  target                = var.psc_service_attachment
-  load_balancing_scheme = ""
-  network               = module.vpc.network_name
-  subnetwork            = var.psc_subnet
-  ip_address            = var.psc_endpoint_ip
+  target      = var.psc_service_attachment
+  network     = module.vpc.network_name
+  subnetwork  = var.psc_subnet
+  ip_address  = var.psc_endpoint_ip
 }
