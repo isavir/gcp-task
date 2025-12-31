@@ -121,24 +121,14 @@ resource "google_compute_service_attachment" "psc_attachment" {
   enable_proxy_protocol = false
 }
 
-# Private Service Connect endpoint IP address (for connecting from public VPC)
-resource "google_compute_address" "psc_endpoint_ip" {
-  count        = var.create_psc_endpoint ? 1 : 0
-  name         = "${var.network_name}-psc-endpoint-ip"
-  region       = var.psc_region
-  subnetwork   = "projects/${data.google_project.current.project_id}/regions/${var.psc_region}/subnetworks/${var.psc_subnet}"
-  address_type = "INTERNAL"
-  address      = var.psc_endpoint_ip
-}
-
 # Private Service Connect endpoint (for connecting from public VPC)
 resource "google_compute_forwarding_rule" "psc_endpoint" {
   count  = var.create_psc_endpoint ? 1 : 0
   name   = "${var.network_name}-psc-endpoint"
   region = var.psc_region
 
-  target      = var.psc_service_attachment
-  network     = module.vpc.network_name
-  subnetwork  = "projects/${data.google_project.current.project_id}/regions/${var.psc_region}/subnetworks/${var.psc_subnet}"
-  ip_address  = var.create_psc_endpoint ? google_compute_address.psc_endpoint_ip[0].address : null
+  target     = var.psc_service_attachment
+  network    = module.vpc.network_name
+  subnetwork = "projects/${data.google_project.current.project_id}/regions/${var.psc_region}/subnetworks/${var.psc_subnet}"
+  # Note: PSC endpoints typically don't specify ip_address - GCP auto-assigns
 }

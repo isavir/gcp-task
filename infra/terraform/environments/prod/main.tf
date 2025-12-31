@@ -81,7 +81,6 @@ module "public_vpc" {
   psc_region             = var.region
   psc_service_attachment = google_compute_service_attachment.psc_attachment.self_link
   psc_subnet             = "public-subnet-${var.region}"
-  psc_endpoint_ip        = "10.0.1.200"
 }
 
 # Private VPC with GKE and Private Service Connect
@@ -234,7 +233,7 @@ module "gke" {
   enable_http_load_balancing = true  # Keep enabled for basic functionality
 
   # Workload Identity (simplified for free tier)
-  enable_workload_identity    = false # Disabled to reduce complexity
+  enable_workload_identity    = true 
   create_workload_identity_sa = false # Disabled for free tier
   # workload_identity_namespace = "default"
   # workload_identity_ksa_name  = "workload-identity-sa"
