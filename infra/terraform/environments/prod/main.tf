@@ -137,6 +137,49 @@ module "private_vpc" {
         }
       ]
       ranges = ["10.1.0.0/16", "10.2.0.0/16", "10.3.0.0/16"]
+    },
+    {
+      name      = "allow-private-google-access-egress"
+      direction = "EGRESS"
+      allow = [
+        {
+          protocol = "tcp"
+          ports    = ["443"]
+        }
+      ]
+      ranges      = ["199.36.153.4/30"]
+      target_tags = ["gke-prod-private-gke"]
+      description = "Allow egress to Private Google Access IP range for Google APIs"
+    },
+    {
+      name      = "allow-metadata-server-egress"
+      direction = "EGRESS"
+      allow = [
+        {
+          protocol = "tcp"
+          ports    = ["80", "443"]
+        }
+      ]
+      ranges      = ["169.254.169.254/32"]
+      target_tags = ["gke-prod-private-gke"]
+      description = "Allow access to metadata server"
+    },
+    {
+      name      = "allow-dns-egress"
+      direction = "EGRESS"
+      allow = [
+        {
+          protocol = "tcp"
+          ports    = ["53"]
+        },
+        {
+          protocol = "udp"
+          ports    = ["53"]
+        }
+      ]
+      ranges      = ["169.254.169.254/32"]
+      target_tags = ["gke-prod-private-gke"]
+      description = "Allow DNS queries to metadata server"
     }
   ]
 

@@ -18,7 +18,7 @@ module "gke" {
   region             = var.region
   zones              = var.zones
 
-  deletion_protection = false
+  deletion_protection = var.deletion_protection
   
   network           = var.network
   subnetwork        = var.subnetwork
