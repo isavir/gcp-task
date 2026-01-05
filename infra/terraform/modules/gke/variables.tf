@@ -40,6 +40,18 @@ variable "enable_private_endpoint" {
   default     = false
 }
 
+variable "enable_private_nodes" {
+  description = "Whether nodes have internal IP addresses only"
+  type        = bool
+  default     = false
+}
+
+variable "create_private_cluster" {
+  description = "Whether to create a private cluster (uses private-cluster module) or regular cluster"
+  type        = bool
+  default     = false
+}
+
 variable "master_ipv4_cidr_block" {
   description = "The IP range in CIDR notation to use for the hosted master network"
   type        = string

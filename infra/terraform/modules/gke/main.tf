@@ -1,4 +1,4 @@
-# GKE Module for Private VPC Deployment
+# GKE Module for both Private and Regular VPC Deployment
 # Built on top of terraform-google-modules/kubernetes-engine/google
 
 # Get current project ID from provider
@@ -7,9 +7,11 @@ data "google_client_config" "default" {}
 # Get current project information
 data "google_project" "current" {}
 
-module "gke" {
+# Private GKE Cluster (conditional)
+module "gke_private" {
   source  = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
   version = "~> 31.0"
+  count   = var.create_private_cluster ? 1 : 0
 
   # Use the project from the provider configuration
   project_id         = data.google_client_config.default.project
@@ -27,7 +29,7 @@ module "gke" {
 
   # Private cluster configuration
   enable_private_endpoint = var.enable_private_endpoint
-  enable_private_nodes    = true
+  enable_private_nodes    = var.enable_private_nodes
   master_ipv4_cidr_block  = var.master_ipv4_cidr_block
 
   # Master authorized networks
@@ -78,6 +80,73 @@ module "gke" {
   # Resource labels
   cluster_resource_labels = var.cluster_resource_labels
 }
+
+# Regular GKE Cluster (conditional)
+module "gke_regular" {
+  source  = "terraform-google-modules/kubernetes-engine/google"
+  version = "~> 31.0"
+  count   = var.create_private_cluster ? 0 : 1
+
+  # Use the project from the provider configuration
+  project_id         = data.google_client_config.default.project
+  network_project_id = data.google_client_config.default.project
+  name               = var.cluster_name
+  region             = var.region
+  zones              = var.zones
+
+  deletion_protection = var.deletion_protection
+  
+  network           = var.network
+  subnetwork        = var.subnetwork
+  ip_range_pods     = var.ip_range_pods
+  ip_range_services = var.ip_range_services
+
+  # Networking
+  enable_shielded_nodes      = var.enable_shielded_nodes
+  network_policy             = var.enable_network_policy
+  horizontal_pod_autoscaling = var.enable_hpa
+  http_load_balancing        = var.enable_http_load_balancing
+
+  # Security
+  enable_binary_authorization = var.enable_binary_authorization
+
+  # Logging and monitoring
+  logging_service    = var.logging_service
+  monitoring_service = var.monitoring_service
+
+  # Cluster features
+  remove_default_node_pool = true
+  initial_node_count       = 1
+
+  # Release channel
+  release_channel = var.release_channel
+
+  # Maintenance window
+  maintenance_start_time = var.maintenance_start_time
+
+  # Workload Identity
+  identity_namespace = var.enable_workload_identity ? "${data.google_client_config.default.project}.svc.id.goog" : null
+
+  # Node pools
+  node_pools = var.node_pools
+
+  node_pools_oauth_scopes = var.node_pools_oauth_scopes
+
+  node_pools_labels = var.node_pools_labels
+
+  node_pools_metadata = var.node_pools_metadata
+
+  node_pools_taints = var.node_pools_taints
+
+  node_pools_tags = var.node_pools_tags
+
+  # Use custom service account for nodes
+  service_account = var.node_service_account_email != "" ? var.node_service_account_email : google_service_account.gke_node_sa[0].email
+
+  # Resource labels
+  cluster_resource_labels = var.cluster_resource_labels
+}
+
 # Additional firewall rules for GKE
 resource "google_compute_firewall" "gke_webhook_firewall" {
   count   = var.create_webhook_firewall ? 1 : 0

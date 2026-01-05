@@ -121,7 +121,7 @@ module "private_vpc" {
 
   firewall_rules = [
     {
-      name      = "allow-internal-private"
+      name      = "allow-internal"
       direction = "INGRESS"
       allow = [
         {
@@ -139,47 +139,17 @@ module "private_vpc" {
       ranges = ["10.1.0.0/16", "10.2.0.0/16", "10.3.0.0/16"]
     },
     {
-      name      = "allow-private-google-access-egress"
-      direction = "EGRESS"
+      name      = "allow-gke-webhooks"
+      direction = "INGRESS"
       allow = [
         {
           protocol = "tcp"
-          ports    = ["443"]
+          ports    = ["8443", "9443", "15017"]
         }
       ]
-      ranges      = ["199.36.153.4/30"]
-      target_tags = ["gke-prod-private-gke"]
-      description = "Allow egress to Private Google Access IP range for Google APIs"
-    },
-    {
-      name      = "allow-metadata-server-egress"
-      direction = "EGRESS"
-      allow = [
-        {
-          protocol = "tcp"
-          ports    = ["80", "443"]
-        }
-      ]
-      ranges      = ["169.254.169.254/32"]
-      target_tags = ["gke-prod-private-gke"]
-      description = "Allow access to metadata server"
-    },
-    {
-      name      = "allow-dns-egress"
-      direction = "EGRESS"
-      allow = [
-        {
-          protocol = "tcp"
-          ports    = ["53"]
-        },
-        {
-          protocol = "udp"
-          ports    = ["53"]
-        }
-      ]
-      ranges      = ["169.254.169.254/32"]
-      target_tags = ["gke-prod-private-gke"]
-      description = "Allow DNS queries to metadata server"
+      ranges      = ["0.0.0.0/0"]
+      target_tags = ["gke-prod-gke"]
+      description = "Allow GKE webhook traffic"
     }
   ]
 
@@ -238,11 +208,11 @@ resource "google_compute_service_attachment" "psc_attachment" {
   enable_proxy_protocol = false
 }
 
-# Private GKE Cluster
+# Regular GKE Cluster (converted from private)
 module "gke" {
   source = "../../modules/gke"
 
-  cluster_name = "prod-private-gke"
+  cluster_name = "prod-gke"
   region       = var.region
   
   network    = module.private_vpc.network_name
@@ -254,20 +224,10 @@ module "gke" {
   # Deletion protection
   deletion_protection = false
 
-  # Private cluster configuration
-  enable_private_endpoint = false # Allow access from authorized networks
-  master_ipv4_cidr_block  = "172.16.0.0/28"
-
-  master_authorized_networks = [
-    {
-      cidr_block   = "10.1.0.0/24"
-      display_name = "GKE subnet"
-    },
-    {
-      cidr_block   = "10.0.1.0/24"
-      display_name = "Public subnet (for management)"
-    }
-  ]
+  # Regular cluster configuration (not private)
+  create_private_cluster  = false
+  enable_private_endpoint = false
+  enable_private_nodes    = false
 
   # Security features (adjusted for free tier)
   enable_shielded_nodes       = false # Disabled for free tier
@@ -282,13 +242,6 @@ module "gke" {
   # Workload Identity (simplified for free tier)
   enable_workload_identity    = true
   create_workload_identity_sa = false # Disabled for free tier
-  # workload_identity_namespace = "default"
-  # workload_identity_ksa_name  = "workload-identity-sa"
-  # workload_identity_roles = [
-  #   "roles/storage.objectViewer",
-  #   "roles/cloudsql.client",
-  #   "roles/secretmanager.secretAccessor"
-  # ]
 
   # Production node pools (Free tier optimized)
   node_pools = [
@@ -320,8 +273,10 @@ module "gke" {
     }
   }
 
-  # Removed taints for simplicity in free tier
-  node_pools_taints = {}
+  node_pools_tags = {
+    all = ["gke-prod-gke"]
+    system-pool = ["gke-prod-gke", "gke-system-pool"]
+  }
 
   cluster_resource_labels = {
     environment = "production"
