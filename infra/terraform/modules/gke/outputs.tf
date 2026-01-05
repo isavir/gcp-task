@@ -1,100 +1,100 @@
 output "cluster_id" {
   description = "Cluster ID"
-  value       = module.gke.cluster_id
+  value       = var.create_private_cluster ? module.gke_private[0].cluster_id : module.gke_regular[0].cluster_id
 }
 
 output "name" {
   description = "Cluster name"
-  value       = module.gke.name
+  value       = var.create_private_cluster ? module.gke_private[0].name : module.gke_regular[0].name
 }
 
 output "type" {
   description = "Cluster type (regional / zonal)"
-  value       = module.gke.type
+  value       = var.create_private_cluster ? module.gke_private[0].type : module.gke_regular[0].type
 }
 
 output "location" {
   description = "Cluster location (region if regional cluster, zone if zonal cluster)"
-  value       = module.gke.location
+  value       = var.create_private_cluster ? module.gke_private[0].location : module.gke_regular[0].location
 }
 
 output "region" {
   description = "Cluster region"
-  value       = module.gke.region
+  value       = var.create_private_cluster ? module.gke_private[0].region : module.gke_regular[0].region
 }
 
 output "zones" {
   description = "List of zones in which the cluster resides"
-  value       = module.gke.zones
+  value       = var.create_private_cluster ? module.gke_private[0].zones : module.gke_regular[0].zones
 }
 
 output "endpoint" {
   description = "Cluster endpoint"
-  value       = module.gke.endpoint
+  value       = var.create_private_cluster ? module.gke_private[0].endpoint : module.gke_regular[0].endpoint
   sensitive   = true
 }
 
 output "min_master_version" {
   description = "Minimum master kubernetes version"
-  value       = module.gke.min_master_version
+  value       = var.create_private_cluster ? module.gke_private[0].min_master_version : module.gke_regular[0].min_master_version
 }
 
 output "logging_service" {
   description = "Logging service used"
-  value       = module.gke.logging_service
+  value       = var.create_private_cluster ? module.gke_private[0].logging_service : module.gke_regular[0].logging_service
 }
 
 output "monitoring_service" {
   description = "Monitoring service used"
-  value       = module.gke.monitoring_service
+  value       = var.create_private_cluster ? module.gke_private[0].monitoring_service : module.gke_regular[0].monitoring_service
 }
 
 output "master_authorized_networks_config" {
   description = "Networks from which access to master is permitted"
-  value       = module.gke.master_authorized_networks_config
+  value       = var.create_private_cluster ? module.gke_private[0].master_authorized_networks_config : module.gke_regular[0].master_authorized_networks_config
 }
 
 output "master_version" {
   description = "Current master kubernetes version"
-  value       = module.gke.master_version
+  value       = var.create_private_cluster ? module.gke_private[0].master_version : module.gke_regular[0].master_version
 }
 
 output "ca_certificate" {
   description = "Cluster ca certificate (base64 encoded)"
-  value       = module.gke.ca_certificate
+  value       = var.create_private_cluster ? module.gke_private[0].ca_certificate : module.gke_regular[0].ca_certificate
   sensitive   = true
 }
 
 output "network_policy_enabled" {
   description = "Whether network policy enabled"
-  value       = module.gke.network_policy_enabled
+  value       = var.create_private_cluster ? module.gke_private[0].network_policy_enabled : module.gke_regular[0].network_policy_enabled
 }
 
 output "http_load_balancing_enabled" {
   description = "Whether http load balancing enabled"
-  value       = module.gke.http_load_balancing_enabled
+  value       = var.create_private_cluster ? module.gke_private[0].http_load_balancing_enabled : module.gke_regular[0].http_load_balancing_enabled
 }
 
 output "horizontal_pod_autoscaling_enabled" {
   description = "Whether horizontal pod autoscaling enabled"
-  value       = module.gke.horizontal_pod_autoscaling_enabled
+  value       = var.create_private_cluster ? module.gke_private[0].horizontal_pod_autoscaling_enabled : module.gke_regular[0].horizontal_pod_autoscaling_enabled
 }
 
 # Node pools
 output "node_pools_names" {
   description = "List of node pools names"
-  value       = module.gke.node_pools_names
+  value       = var.create_private_cluster ? module.gke_private[0].node_pools_names : module.gke_regular[0].node_pools_names
 }
 
 output "node_pools_versions" {
   description = "Node pool versions by node pool name"
-  value       = module.gke.node_pools_versions
+  value       = var.create_private_cluster ? module.gke_private[0].node_pools_versions : module.gke_regular[0].node_pools_versions
 }
 
 # Service account
 output "service_account" {
   description = "The service account to default running nodes as if not overridden in `node_pools`"
-  value       = module.gke.service_account
+  value       = var.create_private_cluster ? module.gke_private[0].service_account : module.gke_regular[0].service_account
 }
 
 output "node_service_account_email" {
@@ -110,7 +110,7 @@ output "node_service_account_name" {
 # Workload Identity
 output "identity_namespace" {
   description = "Workload Identity namespace"
-  value       = module.gke.identity_namespace
+  value       = var.create_private_cluster ? module.gke_private[0].identity_namespace : module.gke_regular[0].identity_namespace
 }
 
 output "workload_identity_service_account_email" {
