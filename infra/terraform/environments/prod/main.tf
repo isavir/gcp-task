@@ -274,8 +274,8 @@ module "gke" {
   }
 
   node_pools_tags = {
-    all = ["gke-prod-gke"]
-    system-pool = ["gke-prod-gke", "gke-system-pool"]
+    all = []
+    system-pool = ["gke-system-pool"]
   }
 
   cluster_resource_labels = {
